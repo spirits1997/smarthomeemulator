@@ -1,0 +1,171 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+/**
+ * Copyright (C) 2023 Korea Association of AI Smart Home.
+ * Copyright (C) 2023 KyungDong Navien Co, Ltd.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+-->
+
+<kr.or.kashi.hde.device.ThermostatView
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:padding="5dp"
+    android:orientation="vertical">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:gravity="left|top"
+        android:orientation="horizontal">
+
+        <CheckBox
+            android:id="@+id/function_check"
+            android:text="Functions:"
+            style="@style/TitleCheckStyle2" />
+
+        <kr.or.kashi.hde.widget.FlowLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal">
+
+            <CheckBox
+                android:id="@+id/function_heating_check"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="HEATING" />
+
+            <CheckBox
+                android:id="@+id/function_cooling_check"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="COOLING" />
+
+            <CheckBox
+                android:id="@+id/function_outing_setting_check"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="OUTING_SETTING" />
+
+            <CheckBox
+                android:id="@+id/function_hotwater_only_check"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="HOTWATER_ONLY" />
+
+            <CheckBox
+                android:id="@+id/function_reserved_mode_check"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="RESERVED_MODE" />
+
+        </kr.or.kashi.hde.widget.FlowLayout>
+
+    </LinearLayout>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:gravity="left|top"
+        android:orientation="horizontal">
+
+        <CheckBox
+            android:id="@+id/temp_range_check"
+            android:text="Temp. Range:"
+            style="@style/TitleCheckStyle2" />
+
+        <TextView
+            android:id="@+id/temp_range_text"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="" />
+
+    </LinearLayout>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:gravity="left|top"
+        android:orientation="horizontal">
+
+        <CheckBox
+            android:id="@+id/current_temp_check"
+            android:text="Current Temp.:"
+            style="@style/TitleCheckStyle2" />
+
+        <TextView
+            android:id="@+id/current_temp_text"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="\u2103" />
+
+    </LinearLayout>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:gravity="left|top"
+        android:orientation="horizontal">
+
+        <CheckBox
+            android:id="@+id/setting_temp_check"
+            android:text="Setting Temp.:"
+            style="@style/TitleCheckStyle2" />
+
+        <TextView
+            android:id="@+id/setting_temp_text"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="\u2103" />
+
+        <Space
+            android:layout_width="10dp"
+            android:layout_height="wrap_content"/>
+
+        <EditText
+            android:id="@+id/setting_temp_edit"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:singleLine="true"
+            android:focusable="true"
+            android:focusableInTouchMode="true"
+            android:inputType="number"
+            android:textSize="14dp"
+            android:text="0.0" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="\u2103" />
+
+        <Button
+            android:id="@+id/temp_setting_button"
+            android:layout_width="70dp"
+            android:layout_height="40dp"
+            android:text="Set" />
+
+    </LinearLayout>
+
+</kr.or.kashi.hde.device.ThermostatView>

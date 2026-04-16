@@ -1,0 +1,160 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+/**
+ * Copyright (C) 2023 Korea Association of AI Smart Home.
+ * Copyright (C) 2023 KyungDong Navien Co, Ltd.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+-->
+
+<kr.or.kashi.hde.device.GasValveView
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:padding="5dp"
+    android:orientation="vertical">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:gravity="left|top"
+        android:orientation="horizontal">
+
+        <CheckBox
+            android:id="@+id/gas_valve_check"
+            android:text="Gas Valve:"
+            style="@style/TitleCheckStyle2" />
+
+        <RadioGroup
+            android:id="@+id/gas_valve_group"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal">
+
+            <RadioButton
+                android:id="@+id/gas_valve_closed_radio"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Closed" />
+
+            <RadioButton
+                android:id="@+id/gas_valve_opened_radio"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Opened" />
+
+        </RadioGroup>
+
+    </LinearLayout>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:gravity="left|top"
+        android:orientation="horizontal">
+
+        <CheckBox
+            android:id="@+id/induction_check"
+            android:text="Induction:"
+            style="@style/TitleCheckStyle2" />
+
+        <RadioGroup
+            android:id="@+id/induction_group"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal">
+
+            <RadioButton
+                android:id="@+id/induction_off_radio"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="OFF" />
+
+            <RadioButton
+                android:id="@+id/induction_on_radio"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="ON" />
+
+        </RadioGroup>
+
+    </LinearLayout>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:gravity="left|top"
+        android:orientation="horizontal">
+
+        <CheckBox
+            android:id="@+id/extinguisher_check"
+            android:text="Extinguisher:"
+            style="@style/TitleCheckStyle2" />
+
+        <RadioGroup
+            android:id="@+id/extinguisher_group"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal">
+
+            <RadioButton
+                android:id="@+id/extinguisher_normal_radio"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Normal" />
+
+            <RadioButton
+                android:id="@+id/extinguisher_buzzing_radio"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Buzzing" />
+
+        </RadioGroup>
+
+    </LinearLayout>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:gravity="left|top"
+        android:orientation="horizontal">
+
+        <CheckBox
+            android:id="@+id/gas_leakage_check"
+            android:text="Gas Leakage:"
+            style="@style/TitleCheckStyle2" />
+
+        <RadioGroup
+            android:id="@+id/gas_leakage_group"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal">
+
+            <RadioButton
+                android:id="@+id/gas_leakage_normal_radio"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Normal" />
+
+            <RadioButton
+                android:id="@+id/gas_leakage_detected_radio"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Detected" />
+
+        </RadioGroup>
+
+    </LinearLayout>
+
+</kr.or.kashi.hde.device.GasValveView>

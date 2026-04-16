@@ -1,0 +1,197 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+/**
+ * Copyright (C) 2023 Korea Association of AI Smart Home.
+ * Copyright (C) 2023 KyungDong Navien Co, Ltd.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+-->
+
+<kr.or.kashi.hde.device.VentilationView
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:padding="5dp"
+    android:orientation="vertical">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:gravity="left|top"
+        android:orientation="horizontal">
+
+        <CheckBox
+            android:id="@+id/modes_check"
+            android:text="Modes:"
+            style="@style/TitleCheckStyle" />
+
+        <kr.or.kashi.hde.widget.FlowRadioGroup
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal">
+
+            <RadioButton
+                android:id="@+id/mode_normal_radio"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="NORMAL" />
+
+            <RadioButton
+                android:id="@+id/mode_sleep_radio"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="SLEEP" />
+
+            <RadioButton
+                android:id="@+id/mode_recycle_radio"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="RECYCLE" />
+
+            <RadioButton
+                android:id="@+id/mode_auto_radio"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="AUTO" />
+
+            <RadioButton
+                android:id="@+id/mode_saving_radio"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="SAVING" />
+
+            <RadioButton
+                android:id="@+id/mode_cleanair_radio"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="CLEANAIR" />
+
+            <RadioButton
+                android:id="@+id/mode_internal_radio"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="INTERNAL" />
+
+        </kr.or.kashi.hde.widget.FlowRadioGroup>
+
+    </LinearLayout>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:gravity="left|top"
+        android:orientation="horizontal">
+
+        <CheckBox
+            android:id="@+id/sensors_check"
+            android:text="Sensors:"
+            style="@style/TitleCheckStyle" />
+
+        <kr.or.kashi.hde.widget.FlowLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal">
+
+            <CheckBox
+                android:id="@+id/sensor_co2_check"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="CO2" />
+
+        </kr.or.kashi.hde.widget.FlowLayout>
+
+    </LinearLayout>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:gravity="left|top"
+        android:orientation="horizontal">
+
+        <CheckBox
+            android:id="@+id/alarms_check"
+            android:text="Alarms:"
+            style="@style/TitleCheckStyle" />
+
+        <kr.or.kashi.hde.widget.FlowLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal">
+
+            <CheckBox
+                android:id="@+id/alarm_fan_overheating_check"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="FAN_OVERHEATING" />
+
+            <CheckBox
+                android:id="@+id/alarm_recycler_change_check"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="RECYCLER_CHANGE" />
+
+            <CheckBox
+                android:id="@+id/alarm_filter_change_check"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="FILTER_CHANGE" />
+
+            <CheckBox
+                android:id="@+id/alarm_smoke_removing_check"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="SMOKE_REMOVING" />
+
+            <CheckBox
+                android:id="@+id/alarm_high_co2_level_check"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="HIGH_CO2_LEVEL" />
+
+            <CheckBox
+                android:id="@+id/alarm_heater_running_check"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="HEATER_RUNNING" />
+
+        </kr.or.kashi.hde.widget.FlowLayout>
+
+    </LinearLayout>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:gravity="left|top"
+        android:orientation="horizontal">
+
+        <CheckBox
+            android:id="@+id/fan_speed_check"
+            android:text="Fan Speed:"
+            style="@style/TitleCheckStyle" />
+
+        <TextView
+            android:id="@+id/fan_speed_text"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="" />
+
+        <SeekBar
+            android:id="@+id/fan_speed_seek"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"/>
+
+    </LinearLayout>
+
+</kr.or.kashi.hde.device.VentilationView>
