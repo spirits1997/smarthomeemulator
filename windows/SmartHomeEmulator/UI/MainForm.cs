@@ -35,18 +35,30 @@ namespace SmartHomeEmulator.UI
 
         // ---- Port list ----
 
-        private void RefreshPortList()
-        {
-            string selected = comboPort.SelectedItem?.ToString();
-            comboPort.Items.Clear();
-            foreach (string p in Session.ComNetworkSession.GetPortNames())
-                comboPort.Items.Add(p);
-            if (comboPort.Items.Count > 0)
-            {
-                int idx = comboPort.Items.IndexOf(selected);
-                comboPort.SelectedIndex = idx >= 0 ? idx : 0;
-            }
-        }
+private void RefreshPortList()
+{
+    string selected = comboPort.SelectedItem?.ToString();
+
+    comboPort.Items.Clear();
+    foreach (string p in Session.ComNetworkSession.GetPortNames())
+        comboPort.Items.Add(p);
+
+    if (comboPort.Items.Count == 0)
+    {
+        comboPort.SelectedIndex = -1;
+        return;
+    }
+
+    // selected가 null이면 IndexOf 호출하지 말고 첫 항목 선택
+    if (string.IsNullOrEmpty(selected))
+    {
+        comboPort.SelectedIndex = 0;
+        return;
+    }
+
+    int idx = comboPort.Items.IndexOf(selected);
+    comboPort.SelectedIndex = idx >= 0 ? idx : 0;
+}
 
         // ---- Baudrate list ----
 
