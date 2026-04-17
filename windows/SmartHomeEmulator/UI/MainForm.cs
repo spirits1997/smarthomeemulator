@@ -78,39 +78,40 @@ namespace SmartHomeEmulator.UI
             comboMode.Items.Add("Slave (Device Emulator)");
             comboMode.Items.Add("Master (Controller)");
             comboMode.SelectedIndex = 0; // slave by default, same as Android app
+            comboMode.SelectedIndexChanged += (s, e) =>
+            {
+                _isSlave = comboMode.SelectedIndex == 0;
+            };
         }
 
         // ---- Default devices ----
 
         // Mode selection (Slave = device emulator, Master = controller)
-#pragma warning disable 414
         private bool _isSlave = true;
-#pragma warning restore 414
 
         private void InitDefaultDevices()
         {
-            // Add a default set of emulated devices (slave mode)
-            // User can modify this list via the UI
-            AddDefaultDevice("36.1F", HomeDevice.PROP_IS_SLAVE, true, "Thermostat Group");
+            // Add a default set of emulated devices (uses current mode setting)
+            AddDefaultDevice("36.1F", "Thermostat Group");
             for (int i = 1; i <= 4; i++)
-                AddDefaultDevice($"36.{i:X2}", HomeDevice.PROP_IS_SLAVE, true, $"Thermostat {i}");
+                AddDefaultDevice($"36.{i:X2}", $"Thermostat {i}");
 
-            AddDefaultDevice("0E.1F", HomeDevice.PROP_IS_SLAVE, true, "Light Group");
+            AddDefaultDevice("0E.1F", "Light Group");
             for (int i = 1; i <= 3; i++)
-                AddDefaultDevice($"0E.{i:X2}", HomeDevice.PROP_IS_SLAVE, true, $"Light {i}");
+                AddDefaultDevice($"0E.{i:X2}", $"Light {i}");
 
-            AddDefaultDevice("12.01", HomeDevice.PROP_IS_SLAVE, true, "Gas Valve");
-            AddDefaultDevice("33.01", HomeDevice.PROP_IS_SLAVE, true, "Batch Switch");
-            AddDefaultDevice("35.01", HomeDevice.PROP_IS_SLAVE, true, "Boiler");
-            AddDefaultDevice("32.1F", HomeDevice.PROP_IS_SLAVE, true, "Ventilation Group");
+            AddDefaultDevice("12.01", "Gas Valve");
+            AddDefaultDevice("33.01", "Batch Switch");
+            AddDefaultDevice("35.01", "Boiler");
+            AddDefaultDevice("32.1F", "Ventilation Group");
         }
 
-        private void AddDefaultDevice(string addr, string isSlaveKey, bool isSlave, string name)
+        private void AddDefaultDevice(string addr, string name)
         {
             var props = new Dictionary<string, object>
             {
                 [HomeDevice.PROP_ADDR]     = addr,
-                [HomeDevice.PROP_IS_SLAVE] = isSlave,
+                [HomeDevice.PROP_IS_SLAVE] = _isSlave,
                 [HomeDevice.PROP_NAME]     = name,
                 [HomeDevice.PROP_AREA]     = HomeDevice.Area.UNKNOWN,
             };
@@ -248,10 +249,6 @@ namespace SmartHomeEmulator.UI
             if (props.ContainsKey(VentilationProps.PROP_FAN_LEVEL))
             {
                 sb.AppendLine($"Fan Level: {props.Get<int>(VentilationProps.PROP_FAN_LEVEL)}");
-            }
-            if (props.ContainsKey(ThermostatProps.PROP_SETTING_TEMPERATURE))
-            {
-                // already handled above
             }
 
             lblDeviceDetail.Text = sb.ToString();
