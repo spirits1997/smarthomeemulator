@@ -17,18 +17,18 @@
 
 package kr.or.kashi.hde.session;
 
+import android.util.Log;
+
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.lang.ref.WeakReference;
-import java.nio.ByteBuffer;
-
-import kr.or.kashi.hde.session.NetworkSession;
+import java.util.ArrayDeque;
 
 /** @hide */
 public class SessionAdapterDelegate implements NetworkSession {
     private static final String TAG = SessionAdapterDelegate.class.getSimpleName();
-    private static final int BUFFER_SIZE = 1024;
+    private static final int MAX_RX_QUEUE_SIZE = 32 * 1024;
 
     private final WeakReference<NetworkSessionAdapter> mAdapter;
     private ReadStream mInputStream;
@@ -39,7 +39,9 @@ public class SessionAdapterDelegate implements NetworkSession {
     }
 
     public void putData(byte[] b) {
-        mInputStream.addBuffer(b);
+        if (mInputStream != null) {
+            mInputStream.addBuffer(b);
+        }
     }
 
     @Override
@@ -67,83 +69,151 @@ public class SessionAdapterDelegate implements NetworkSession {
 
     @Override
     public InputStream getInputStream() {
-        return mInputStream; 
+        return mInputStream;
     }
 
     @Override
     public OutputStream getOutputStream() {
-        return mOutputStream; 
+        return mOutputStream;
     }
 
     private class ReadStream extends InputStream {
-        private ByteBuffer mByteBuffer;
-
-        public ReadStream() {
-            mByteBuffer = ByteBuffer.allocate(BUFFER_SIZE);
-        }
+        private final ArrayDeque<byte[]> mQueue = new ArrayDeque<>();
+        private int mQueueSize = 0;
+        private int mReadOffset = 0;
+        private boolean mClosed = false;
 
         public void addBuffer(byte[] b) {
-            synchronized (mByteBuffer) {
-                mByteBuffer.put(b);
-                mByteBuffer.notifyAll();
+            if (b == null || b.length == 0) return;
+
+            byte[] copy = new byte[b.length];
+            System.arraycopy(b, 0, copy, 0, b.length);
+
+            synchronized (mQueue) {
+                if (mClosed) return;
+
+                while (!mQueue.isEmpty() && (mQueueSize + copy.length) > MAX_RX_QUEUE_SIZE) {
+                    byte[] removed = mQueue.poll();
+                    if (removed != null) {
+                        int removedBytes = removed.length;
+                        if (mReadOffset > 0) {
+                            removedBytes -= mReadOffset;
+                            mReadOffset = 0;
+                        }
+                        mQueueSize -= removedBytes;
+                    }
+                }
+
+                if ((mQueueSize + copy.length) > MAX_RX_QUEUE_SIZE) {
+                    Log.w(TAG, "drop oversized RX buffer len=" + copy.length);
+                    return;
+                }
+
+                mQueue.add(copy);
+                mQueueSize += copy.length;
+                mQueue.notifyAll();
             }
         }
 
-        private boolean ensureBuffer() throws IOException {
-            try {
-                if (mByteBuffer.position() == 0) {
-                    mByteBuffer.wait();
+        private boolean waitForDataLocked() throws IOException {
+            while (!mClosed && mQueueSize == 0) {
+                try {
+                    mQueue.wait();
+                } catch (InterruptedException e) {
+                    throw new IOException("interrupted while waiting RX data", e);
                 }
-            } catch (InterruptedException e) {
             }
-            return mByteBuffer.hasRemaining();
+            return mQueueSize > 0;
         }
 
         @Override
         public int read() throws IOException {
-            synchronized (mByteBuffer) {
-                if (!ensureBuffer()) return -1;
-                mByteBuffer.flip();
-                final int d = mByteBuffer.get() & 0xFF;
-                mByteBuffer.compact();
-                return d;
+            synchronized (mQueue) {
+                if (!waitForDataLocked()) return -1;
+
+                byte[] head = mQueue.peek();
+                int value = head[mReadOffset] & 0xFF;
+                mReadOffset++;
+                mQueueSize--;
+
+                if (mReadOffset >= head.length) {
+                    mQueue.poll();
+                    mReadOffset = 0;
+                }
+                return value;
             }
         }
 
         @Override
         public int read(byte b[], int off, int len) throws IOException {
-            synchronized (mByteBuffer) {
-                if (!ensureBuffer()) return -1;
-                mByteBuffer.flip();
-                len = Math.min(len, mByteBuffer.remaining());
-                mByteBuffer.get(b, off, len);
-                mByteBuffer.compact();
-                return len;
+            if (b == null) throw new NullPointerException("buffer == null");
+            if (off < 0 || len < 0 || off + len > b.length) {
+                throw new IndexOutOfBoundsException("off=" + off + ", len=" + len + ", size=" + b.length);
+            }
+            if (len == 0) return 0;
+
+            synchronized (mQueue) {
+                if (!waitForDataLocked()) return -1;
+
+                int copied = 0;
+                while (copied < len && mQueueSize > 0) {
+                    byte[] head = mQueue.peek();
+                    int availableInHead = head.length - mReadOffset;
+                    int copyLen = Math.min(len - copied, availableInHead);
+                    System.arraycopy(head, mReadOffset, b, off + copied, copyLen);
+
+                    copied += copyLen;
+                    mReadOffset += copyLen;
+                    mQueueSize -= copyLen;
+
+                    if (mReadOffset >= head.length) {
+                        mQueue.poll();
+                        mReadOffset = 0;
+                    }
+                }
+                return copied;
             }
         }
 
         @Override
         public long skip(long n) throws IOException {
             if (n <= 0L) return 0L;
-            synchronized (mByteBuffer) {
-                mByteBuffer.flip();
-                int remainingSize = Math.min(mByteBuffer.remaining(), (int)n);
-                mByteBuffer.position(mByteBuffer.position() + remainingSize);
-                mByteBuffer.compact();
+            synchronized (mQueue) {
+                if (!waitForDataLocked()) return 0L;
+
+                long skipped = 0;
+                while (skipped < n && mQueueSize > 0) {
+                    byte[] head = mQueue.peek();
+                    int availableInHead = head.length - mReadOffset;
+                    int skipLen = (int)Math.min(n - skipped, availableInHead);
+                    mReadOffset += skipLen;
+                    mQueueSize -= skipLen;
+                    skipped += skipLen;
+
+                    if (mReadOffset >= head.length) {
+                        mQueue.poll();
+                        mReadOffset = 0;
+                    }
+                }
+                return skipped;
             }
-            return (long)n;
         }
 
         @Override
         public int available() throws IOException {
-            return mByteBuffer.remaining();
+            synchronized (mQueue) {
+                return mQueueSize;
+            }
         }
 
         @Override
         public void close() throws IOException {
-            synchronized (mByteBuffer) {
-                mByteBuffer.clear();
-                mByteBuffer.notifyAll();
+            synchronized (mQueue) {
+                mClosed = true;
+                mQueue.clear();
+                mQueueSize = 0;
+                mReadOffset = 0;
+                mQueue.notifyAll();
             }
         }
     }
@@ -158,11 +228,17 @@ public class SessionAdapterDelegate implements NetworkSession {
 
         @Override
         public void write(byte b[], int off, int len) throws IOException {
+            if (b == null) throw new NullPointerException("buffer == null");
+            if (off < 0 || len < 0 || off + len > b.length) {
+                throw new IndexOutOfBoundsException("off=" + off + ", len=" + len + ", size=" + b.length);
+            }
+            if (len == 0) return;
+
             if (b.length == len && off == 0) {
                 onWriteBytes(b);
             } else {
                 byte[] data = new byte[len];
-                System.arraycopy(b, 0, data, 0, len);
+                System.arraycopy(b, off, data, 0, len);
                 onWriteBytes(data);
             }
         }

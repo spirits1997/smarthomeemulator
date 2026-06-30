@@ -41,6 +41,7 @@ import android.widget.ToggleButton;
 import androidx.fragment.app.Fragment;
 import androidx.recyclerview.widget.RecyclerView;
 
+import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
@@ -317,6 +318,8 @@ public class MainFragment extends Fragment {
 
         updateLogFilter();
 
+        autoLoadDeviceListIfSaved();
+
         return v;
     }
 
@@ -592,36 +595,43 @@ public class MainFragment extends Fragment {
         updateDeviceList();
     }
 
-    private void loadDeviceList() {
-        FileInputStream fis = null;
-        try {
-            fis = mContext.openFileInput(SAVED_DEVICES_FILENAME);
-        } catch (FileNotFoundException e) {
-            debug("No saved list");
+    private void autoLoadDeviceListIfSaved() {
+        File savedFile = mContext.getFileStreamPath(SAVED_DEVICES_FILENAME);
+        if (savedFile == null || !savedFile.exists() || savedFile.length() <= 0) {
+            debug("No saved device list for auto-load");
             return;
         }
 
-        if (mNetwork.loadDevicesFrom(fis)) {
-            debug("Device list has been loaded successfully");
-            updateDeviceList();
-        } else {
-            debug("Can't load the saved device list");
+        debug("Saved device list found. Auto-loading...");
+        loadDeviceList();
+    }
+
+    private void loadDeviceList() {
+        try (FileInputStream fis = mContext.openFileInput(SAVED_DEVICES_FILENAME)) {
+            if (mNetwork.loadDevicesFrom(fis)) {
+                debug("Device list has been loaded successfully");
+                updateDeviceList();
+            } else {
+                debug("Can't load the saved device list");
+            }
+        } catch (FileNotFoundException e) {
+            debug("No saved list");
+        } catch (Exception e) {
+            Log.e(TAG, "load device list failed", e);
+            debug("Can't load the saved device list: " + e.getClass().getSimpleName());
         }
     }
 
     private void saveDeviceList() {
-        FileOutputStream fos = null;
-        try {
-            fos = mContext.openFileOutput(SAVED_DEVICES_FILENAME, Context.MODE_PRIVATE);
-        } catch (FileNotFoundException e) {
-            debug("Can't open file to save");
-            return;
-        }
-
-        if (mNetwork.saveDevicesTo(fos)) {
-            debug("Device list has benn saved successfully");
-        } else {
-            debug("Can't save the device list");
+        try (FileOutputStream fos = mContext.openFileOutput(SAVED_DEVICES_FILENAME, Context.MODE_PRIVATE)) {
+            if (mNetwork.saveDevicesTo(fos)) {
+                debug("Device list has been saved successfully");
+            } else {
+                debug("Can't save the device list");
+            }
+        } catch (Exception e) {
+            Log.e(TAG, "save device list failed", e);
+            debug("Can't open file to save: " + e.getClass().getSimpleName());
         }
     }
 

@@ -223,16 +223,19 @@ public class KSMainContext extends MainContext {
 
         KSPacket packet = (KSPacket) createPacket();
         if (!packet.parse(buffer)) {
-            // Invalid packet. let's find next header.
+            // Invalid packet. Let's find next header.
+            // Keep a one-frame diagnostic log so RX problems can be distinguished
+            // from a completely silent UART/session.
+            printInvalidRxLog(buffer);
             // Otherwise, if buffer is too short, this loop exits by the exception.
             buffer.get(); // move to next
             return false;
         }
 
-        // TODO: Should be get more efficient instead of converting to byte buffer.
-        ByteBuffer byteBuffer = ByteBuffer.allocate(64);
-        packet.toBuffer(byteBuffer);
-        DebugLog.printTxRx("RX: " + Utils.toHexString(byteBuffer));
+        final String rxLog = "RX: " + packetToHexString(packet);
+        // Packet-level RX log only. Do not log raw stream chunks here.
+        Log.d(TAG, rxLog);
+        DebugLog.printTxRx(rxLog);
 
         // Parse packet for discovery if running.
         parsePacketInDiscovery(packet);
@@ -241,6 +244,35 @@ public class KSMainContext extends MainContext {
         parsePacketInDeviceContexts(packet);
 
         return true;
+    }
+
+    private void printInvalidRxLog(ByteBuffer buffer) {
+        final int pos = buffer.position();
+        final int remain = buffer.remaining();
+        int dumpSize = Math.min(remain, 16);
+        try {
+            if (remain >= 5) {
+                int length = buffer.get(pos + 4) & 0xFF;
+                dumpSize = Math.min(remain, 5 + length + 2);
+            }
+        } catch (RuntimeException e) {
+            dumpSize = Math.min(remain, 16);
+        }
+
+        ByteBuffer dumpBuffer = buffer.duplicate();
+        dumpBuffer.position(pos);
+        dumpBuffer.limit(pos + dumpSize);
+        final String invalidLog = "RX-INVALID: " + Utils.toHexString(dumpBuffer);
+        Log.w(TAG, invalidLog);
+        DebugLog.printTxRx(invalidLog);
+    }
+
+    private String packetToHexString(KSPacket packet) {
+        // KS frame size is 5-byte header + data + 2-byte checksum.
+        int dataLength = (packet.data != null) ? packet.data.length : 0;
+        ByteBuffer byteBuffer = ByteBuffer.allocate(5 + dataLength + 2);
+        packet.toBuffer(byteBuffer);
+        return Utils.toHexString(byteBuffer);
     }
 
     private void parsePacketInDiscovery(KSPacket packet) {

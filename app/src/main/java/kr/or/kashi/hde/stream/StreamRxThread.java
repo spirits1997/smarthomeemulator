@@ -23,7 +23,6 @@ import java.io.InputStream;
 import java.io.InterruptedIOException;
 import java.lang.InterruptedException;
 
-import kr.or.kashi.hde.util.Utils;
 
 public class StreamRxThread extends Thread {
     private static final String TAG = StreamRxThread.class.getSimpleName();
@@ -64,12 +63,10 @@ public class StreamRxThread extends Thread {
                 }
 
                 int len = Math.min(ret, buf.length);
-                if (DBG) Log.d(TAG, "RX: " + Utils.toHexString(buf, len));
-
                 mCallback.onPacketReceived(buf, len);
             }
         } catch (Exception e) {
-            if (!mRun && (e instanceof InterruptedIOException || e instanceof InterruptedException)) {
+            if (!mRun) {
                 // It assumes there might be a request to stop thread.
             } else {
                 e.printStackTrace();

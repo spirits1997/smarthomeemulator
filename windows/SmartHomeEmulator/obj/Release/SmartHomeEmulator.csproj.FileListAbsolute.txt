@@ -1,3 +1,0 @@
-C:\Users\spiri\workspace\kocom\testcode\smarthomeEmulator\windows\SmartHomeEmulator\obj\Release\SmartHomeEmulator.csprojResolveAssemblyReference.cache
-C:\Users\spiri\workspace\kocom\testcode\smarthomeEmulator\windows\SmartHomeEmulator\obj\Release\SmartHomeEmulator.UI.MainForm.resources
-C:\Users\spiri\workspace\kocom\testcode\smarthomeEmulator\windows\SmartHomeEmulator\obj\Release\SmartHomeEmulator.csproj.GenerateResource.Cache

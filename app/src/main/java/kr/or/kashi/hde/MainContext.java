@@ -125,9 +125,9 @@ public abstract class MainContext extends DeviceManager
 
             mRxByteBuffer.put(data, 0, length);
 
-            if (mRxEventHandler.hasCallbacks(mClearBufferRunnable) == false) {
-                mRxEventHandler.removeCallbacks(mClearBufferRunnable);
-            }
+            // New bytes arrived, so a previously incomplete frame may now be complete.
+            // Always cancel pending stale-buffer cleanup before parsing again.
+            mRxEventHandler.removeCallbacks(mClearBufferRunnable);
 
             if (mRxEventHandler.hasCallbacks(mProcessBufferRunnable) == false) {
                 mRxEventHandler.post(mProcessBufferRunnable);
@@ -158,7 +158,7 @@ public abstract class MainContext extends DeviceManager
 
     private void onClearBuffer() {
         synchronized (mRxByteBuffer) {
-            int remaining = mRxByteBuffer.remaining();
+            int remaining = mRxByteBuffer.position();
             if (remaining > 0) {
                 mRxByteBuffer.clear();
                 Log.w(TAG, "clear incomplete remaining data (" + remaining + ")");

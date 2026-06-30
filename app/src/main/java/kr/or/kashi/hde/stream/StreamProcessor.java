@@ -122,7 +122,12 @@ public class StreamProcessor implements StreamCallback {
     }
 
     public void sendPacket(HomePacket packet) {
-        mTxThread.addPacket(packet);
+        StreamTxThread txThread = mTxThread;
+        if (!mIsRunning || txThread == null) {
+            Log.w(TAG, "drop TX because stream is not running");
+            return;
+        }
+        txThread.addPacket(packet);
     }
 
     public boolean schedulePacket(PacketSchedule schedule) {
@@ -152,7 +157,7 @@ public class StreamProcessor implements StreamCallback {
     @Override
     public void onErrorOccurred() {
         mHandlerExecutor.execute(() -> {
-            Log.d(TAG, "error! stream processor is stopping");
+            Log.e(TAG, "stream error occurred. stopping stream and requesting restart");
             stopStream();
 
             if (mErrorRunnable != null) {

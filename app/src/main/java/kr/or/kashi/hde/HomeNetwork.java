@@ -136,7 +136,7 @@ public class HomeNetwork {
         stop();
 
         if (mRetryCount++ >= MAX_RETRY) {
-            Log.e(TAG, " retry count reached over max");
+            Log.e(TAG, " retry count reached over max. network stopped but Activity remains alive");
             return;
         }
 

@@ -117,6 +117,7 @@ public class UartSchedSession extends NetworkSessionAdapter {
         }
 
         mUartSchedPort.registerCallback(mUartSchedPortCallback);
+        Log.d(TAG, "opened internal UART port " + mPortName + " " + mPortSpeed);
 
         return true;
     }

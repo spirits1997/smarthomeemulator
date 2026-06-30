@@ -46,6 +46,7 @@ import java.util.List;
 import kr.or.kashi.hde.session.NetworkSession;
 import kr.or.kashi.hde.session.UartSchedSession;
 import kr.or.kashi.hde.session.UsbNetworkSession;
+import kr.or.kashi.hde.util.DebugLog;
 import kr.or.kashi.hde.util.LocalPreferences;
 import kr.or.kashi.hde.util.LocalPreferences.Pref;
 import kr.or.kashi.hde.util.Utils;
@@ -100,6 +101,7 @@ public class MainActivity extends AppCompatActivity {
         registerReceiver(mUsbReceiver, new IntentFilter(ACTION_USB_PERMISSION));
 
         mHandler = new Handler(Looper.getMainLooper());
+        McuWatchdogDisabler.sendOnceOnAppStart(mHandler);
         mInputMethodManager = (InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE);
 
         mStartButton = findViewById(R.id.start_button);
@@ -141,8 +143,25 @@ public class MainActivity extends AppCompatActivity {
 
     @Override
     protected void onDestroy() {
+        // Clear the static UI logger reference first. Otherwise the old Activity/View can
+        // be retained after launcher relaunch or process recreation.
+        DebugLog.setLogger(null);
+
+        // If the Activity is actually destroyed, close the emulator resources explicitly.
+        // LAST_RUNNING remains true unless the user pressed STOP, so launcher relaunch can
+        // start it again.
+        if (mHomeNetwork != null) {
+            mHomeNetwork.stop();
+            mHomeNetwork = null;
+        }
+
+        try {
+            unregisterReceiver(mUsbReceiver);
+        } catch (IllegalArgumentException e) {
+            Log.w(TAG, "USB receiver was already unregistered", e);
+        }
+
         super.onDestroy();
-        unregisterReceiver(mUsbReceiver);
     }
 
     private void setStateText(String text) {
@@ -152,23 +171,64 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
+    private List<String> getAvailableInternalSerialPorts() {
+        List<String> availablePorts = new ArrayList<>();
+        String[] allowedPorts = new String[] { "/dev/ttyS0", "/dev/ttyS4" };
+
+        File devDir = new File("/dev");
+        File[] ttyEntries = devDir.listFiles((dir, name) -> name.equals("ttyS0") || name.equals("ttyS4"));
+        List<String> foundPorts = new ArrayList<>();
+        if (ttyEntries != null) {
+            for (File entry : ttyEntries) {
+                foundPorts.add(entry.getAbsolutePath());
+            }
+        }
+        Log.d(TAG, "Internal UART scan /dev allowed=[/dev/ttyS0, /dev/ttyS4], found=" + foundPorts);
+
+        for (String portPath : allowedPorts) {
+            File portFile = new File(portPath);
+            boolean exists = portFile.exists();
+            boolean canRead = portFile.canRead();
+            boolean canWrite = portFile.canWrite();
+            Log.d(TAG, "Internal UART candidate " + portPath
+                    + " exists=" + exists
+                    + ", canRead=" + canRead
+                    + ", canWrite=" + canWrite);
+            if (exists) {
+                availablePorts.add(portPath);
+            }
+        }
+
+        Log.d(TAG, "Internal UART available port list=" + availablePorts);
+        return availablePorts;
+    }
+
     private String findInternalSerialPort() {
         if (Build.MANUFACTURER.length() > 7 && !Build.MANUFACTURER.substring(3,5).equals("AV")) {
             Log.e(TAG, "Internal port is not supported for manufacturer:" + Build.MANUFACTURER);
             return null;
         }
 
-        String portPath = "/dev/ttyS0";
-        if (Build.MODEL.length() == 15 && Build.MODEL.substring(6,15).equals("NS-SAMPLE")) {
-            portPath = "/dev/ttyS4";
-        }
-
-        if (!new File(portPath).exists()) {
-            Log.e(TAG, portPath + " is does not exist");
+        List<String> availablePorts = getAvailableInternalSerialPorts();
+        if (availablePorts.isEmpty()) {
+            Log.e(TAG, "No internal UART port exists in /dev. allowed=[/dev/ttyS0, /dev/ttyS4]");
             return null;
         }
 
-        return portPath;
+        String preferredPort = "/dev/ttyS0";
+        if (Build.MODEL.length() == 15 && Build.MODEL.substring(6,15).equals("NS-SAMPLE")) {
+            preferredPort = "/dev/ttyS4";
+        }
+
+        if (availablePorts.contains(preferredPort)) {
+            Log.d(TAG, "Internal UART selected preferred port=" + preferredPort);
+            return preferredPort;
+        }
+
+        String fallbackPort = availablePorts.get(0);
+        Log.w(TAG, "Preferred internal UART " + preferredPort
+                + " does not exist. selected fallback port=" + fallbackPort);
+        return fallbackPort;
     }
 
     private void startEmulator() {
